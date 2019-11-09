@@ -205,14 +205,20 @@ class steamLauncher(Wox):
                 gameIcon = 'Image/icon.png'
         gameList.append({'gameId': gameId, 'gameTitle': detail[b'name'].decode('utf-8'), 'gameIcon': gameIcon})
 
-    def query(self, query):
+    def query(self, queryString):
         result = []
         gameList = self.gameList
-        q = query.lower()
-        pattern = '.*?'.join(q)
-        regex = re.compile(pattern)
+        queryStringLower = queryString.lower()
+        queryList = queryStringLower.split()
+        regexList = []
+        for query in queryList:
+            # pattern = '.*?'.join(query)
+            # regexList.append(re.compile(pattern))
+            regexList.append(re.compile(query))
         for game in gameList:
-            match = regex.search(game['gameTitle'].lower())
+            match = True
+            for regex in regexList:
+                match = regex.search(item.lower()) and match
             if match:
                 result.append(
                     {
