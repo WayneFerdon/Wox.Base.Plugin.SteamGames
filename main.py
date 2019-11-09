@@ -18,9 +18,9 @@ Integer = namedtuple('Integer', ('size', 'data'))
 class appInfoDecoder:
 
     def __init__(self, data, wrapper=dict):
-        self.wrapper = wrapper        # Wrapping container
+        self.wrapper = wrapper  # Wrapping container
         self.data = memoryview(data)  # Incoming data (bytes)
-        self.offset = 0               # Parsing offset
+        self.offset = 0  # Parsing offset
 
         # Commonly used structs
         self._readInt32 = self.makeCustomReader('<I', singleValue=True)
@@ -88,7 +88,7 @@ class appInfoDecoder:
                     # New Section ID's could be added in the future, or changes could be made to
                     # existing ones, so instead of maintaining a table of section names and their
                     # corresponding IDs, we are going to store the IDs with all the data.
-                    app['sections'][sectionName][b'__steamfiles_sectionId'] = sectionId
+                    app['sections'][sectionName][b'__steamFiles_sectionId'] = sectionId
             if str(appId) in gameIds:
                 parsed[appId] = app
         return parsed
@@ -157,73 +157,80 @@ class appInfoDecoder:
 
     @staticmethod
     def _unknownValueType():
-        raise ValueError("Cannot parse the provided data type.")
+        raise ValueError('Cannot parse the provided data type.')
 
 
 class steamLauncher(Wox):
-    # set path
-    steamPath = "C:/Program Files (x86)/Steam/"
+    # set paths
+    iconDatabase = 'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/'
+
+    sysPathList = os.environ['path'].split(';')
+    steamPathList = []
+    for sysPath in sysPathList:
+        if os.path.isfile(sysPath + '/steam.exe') and sysPath not in steamPathList:
+            steamPathList.append(sysPath + '/')
+    steamPath = steamPathList[0]
 
     # load libFolders' path
-    libs = [steamPath + "steamapps/"]
-    with open(libs[0] + "libraryfolders.vdf") as libFoldersPath:
+    libs = [steamPath + 'steamApps/']
+    with open(libs[0] + 'libraryFolders.vdf') as libFoldersPath:
         libFolders = vdf.load(libFoldersPath)['LibraryFolders']
-    gameIdList = []
+
     # get apps' id
-    for i in range(1, len(libFolders) - 1):
-        lib = libFolders[str(i)] + "/steamapps/"
+    gameIdList = []
+    libKeyNum = 1
+    libKey = str(libKeyNum)
+    while libKey in libFolders:
+        lib = libFolders[libKey] + '/steamApps/'
         for file in os.scandir(lib):
-            if "appmanifest" in file.name and "228980" not in file.name:
-                gameIdList.append(file.name.replace("appmanifest_", "").replace(".acf", ""))
+            if 'appManifest'.lower() in file.name and '228980' not in file.name:
+                gameIdList.append(file.name.replace('appManifest_'.lower(), '').replace('.acf', ''))
+        libKeyNum += 1
+        libKey = str(libKeyNum)
 
     # get apps' title, icon
-    # load appinfo.vdf for loading clienticon id
-
-    with open(steamPath + "appcache/appinfo.vdf", 'rb') as appinfoVdf:
+    # load appinfo.vdf for loading client icon id
+    with open(steamPath + 'appCache/appInfo.vdf', 'rb') as appinfoVdf:
         infoList = appInfoDecoder(appinfoVdf.read(), wrapper=dict).decode(gameIdList).items()
     gameList = []
     for info in infoList:
         gameId = info[0]
-        detail = info[1]["sections"][b"appinfo"][b"common"]
-        gameIconId = detail[b"clienticon"].decode("utf-8")
-        gameIcon = steamPath + "/steam/games/" + gameIconId + ".ico"
+        detail = info[1]['sections'][b'appInfo'.lower()][b'common']
+        gameIconId = detail[b'clientIcon'.lower()].decode('utf-8')
+        gameIcon = steamPath + '/steam/games/' + gameIconId + '.ico'
         if not os.path.isfile(gameIcon):
             try:
-                iconDatabase = "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/"
-                headers = {'User-Agent':
-                    'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36'
-                }
-                urlretrieve(url=iconDatabase + str(gameId) + "/" + gameIconId + ".ico", filename=gameIcon)
-            except:
-                gameIcon = "Image/icon.png"
-        gameList.append({"gameId": gameId, "gameTitle": detail[b"name"].decode("utf-8"), "gameIcon": gameIcon})
+                urlretrieve(url=iconDatabase + str(gameId) + '/' + gameIconId + '.ico', filename=gameIcon)
+            except BaseException:
+                gameIcon = 'Image/icon.png'
+        gameList.append({'gameId': gameId, 'gameTitle': detail[b'name'].decode('utf-8'), 'gameIcon': gameIcon})
 
     def query(self, query):
         result = []
-        gamelist = self.gameList
+        gameList = self.gameList
         q = query.lower()
-        pattern = ".*?".join(q)
+        pattern = '.*?'.join(q)
         regex = re.compile(pattern)
-        for game in gamelist:
-            match = regex.search(game["gameTitle"].lower())
+        for game in gameList:
+            match = regex.search(game['gameTitle'].lower())
             if match:
                 result.append(
                     {
-                        "Title": game["gameTitle"] + " - ({})".format(game["gameId"]),
-                        "SubTitle": "Press Enter key to launch",
-                        "IcoPath": game["gameIcon"],
-                        "JsonRPCAction": {
-                            "method": "launchGame",
-                            "parameters": [game["gameId"]],
-                            "dontHideAfterAction": False,
+                        'Title': game['gameTitle'] + ' - ({})'.format(game['gameId']),
+                        'SubTitle': 'Press Enter key to launch',
+                        'IcoPath': game['gameIcon'],
+                        'JsonRPCAction': {
+                            'method': 'launchGame',
+                            'parameters': [game['gameId']],
+                            'dontHideAfterAction': False,
                         },
                     }
                 )
         return result
 
     def launchGame(self, gameId):
-        webbrowser.open("steam://rungameid/{}".format(gameId))
+        webbrowser.open('steam://runGameId/{}'.format(gameId))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     steamLauncher()
