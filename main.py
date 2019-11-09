@@ -208,6 +208,7 @@ class steamLauncher(Wox):
     def query(self, queryString):
         result = []
         gameList = self.gameList
+
         queryStringLower = queryString.lower()
         queryList = queryStringLower.split()
         regexList = []
@@ -215,6 +216,7 @@ class steamLauncher(Wox):
             # pattern = '.*?'.join(query)
             # regexList.append(re.compile(pattern))
             regexList.append(re.compile(query))
+
         for game in gameList:
             match = True
             for regex in regexList:
