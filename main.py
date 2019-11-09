@@ -162,18 +162,18 @@ class appInfoDecoder:
 
 class steamLauncher(Wox):
     # set paths
-    iconDatabase = 'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps/'
+    iconDatabase = 'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps'
 
     sysPathList = os.environ['path'].split(';')
     steamPathList = []
     for sysPath in sysPathList:
         if os.path.isfile(sysPath + '/steam.exe') and sysPath not in steamPathList:
-            steamPathList.append(sysPath + '/')
+            steamPathList.append(sysPath)
     steamPath = steamPathList[0]
 
     # load libFolders' path
-    libs = [steamPath + 'steamApps/']
-    with open(libs[0] + 'libraryFolders.vdf') as libFoldersPath:
+    libs = [steamPath + '/steamApps']
+    with open(libs[0] + '/libraryFolders.vdf') as libFoldersPath:
         libFolders = vdf.load(libFoldersPath)['LibraryFolders']
 
     # get apps' id
@@ -181,7 +181,7 @@ class steamLauncher(Wox):
     libKeyNum = 1
     libKey = str(libKeyNum)
     while libKey in libFolders:
-        lib = libFolders[libKey] + '/steamApps/'
+        lib = libFolders[libKey] + '/steamApps'
         for file in os.scandir(lib):
             if 'appManifest'.lower() in file.name and '228980' not in file.name:
                 gameIdList.append(file.name.replace('appManifest_'.lower(), '').replace('.acf', ''))
@@ -189,8 +189,8 @@ class steamLauncher(Wox):
         libKey = str(libKeyNum)
 
     # get apps' title, icon
-    # load appinfo.vdf for loading client icon id
-    with open(steamPath + 'appCache/appInfo.vdf', 'rb') as appinfoVdf:
+    # load app info vdf for loading client icon id
+    with open(steamPath + '/appCache/appInfo.vdf', 'rb') as appinfoVdf:
         infoList = appInfoDecoder(appinfoVdf.read(), wrapper=dict).decode(gameIdList).items()
     gameList = []
     for info in infoList:
@@ -200,7 +200,7 @@ class steamLauncher(Wox):
         gameIcon = steamPath + '/steam/games/' + gameIconId + '.ico'
         if not os.path.isfile(gameIcon):
             try:
-                urlretrieve(url=iconDatabase + str(gameId) + '/' + gameIconId + '.ico', filename=gameIcon)
+                urlretrieve(url=iconDatabase + '/' + str(gameId) + '/' + gameIconId + '.ico', filename=gameIcon)
             except BaseException:
                 gameIcon = 'Image/icon.png'
         gameList.append({'gameId': gameId, 'gameTitle': detail[b'name'].decode('utf-8'), 'gameIcon': gameIcon})
@@ -222,7 +222,7 @@ class steamLauncher(Wox):
                         'JsonRPCAction': {
                             'method': 'launchGame',
                             'parameters': [game['gameId']],
-                            'dontHideAfterAction': False,
+                            "doNotHideAfterAction".replace('oNo', 'on'): False,
                         },
                     }
                 )
