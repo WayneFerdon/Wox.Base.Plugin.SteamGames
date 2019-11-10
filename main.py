@@ -8,7 +8,7 @@ from collections import namedtuple
 import vdf
 from wox import Wox, WoxAPI
 
-vdfVersions = [0x07564426, 0x07564427]
+vdfVersionList = [0x07564426, 0x07564427]
 vdfUniverse = 0x00000001
 
 # VDF has variable length integers (32-bit and 64-bit).
@@ -26,52 +26,56 @@ class appInfoDecoder:
         self._readInt32 = self.makeCustomReader('<I', singleValue=True)
         self._readInt64 = self.makeCustomReader('<Q', singleValue=True)
         self.readVdfHeader = self.makeCustomReader('<2I')
-        self.readGameHeader = self.makeCustomReader('<3IQ20sI')
+        self.readAppHeader = self.makeCustomReader('<3IQ20sI')
 
         # Functions to parse different data structures.
-        self.valueParsers = {
-            0x00: self.parseSubsections,
+        self.valueParserDic = {
+            0x00: self.parseSubsectionList,
             0x01: self.readString,
             0x02: self.readInt32,
             0x07: self.readInt64,
         }
 
-    def decode(self, gameIds):
+    def decode(self, appIdList):
         parsed = self.wrapper()
         # These should always be present.
-        headerFields = ('version', 'universe')
-        header = self.wrapper((zip(headerFields, self.readVdfHeader())))
-        if len(header) != len(headerFields):
-            raise ValueError('Not all VDF headers are present, only found {num}: {header!r}'.format(
-                num=len(header),
-                header=header,
-            ))
+        headerFieldList = ('version', 'universe')
+        header = self.wrapper(
+            zip(headerFieldList, self.readVdfHeader())
+        )
+        if len(header) != len(headerFieldList):
+            raise ValueError(
+                'Not all VDF headers are present, only found {num}: {header!r}'.format(num=len(header), header=header)
+            )
 
         # Currently these are the only possible values for
         # a valid appinfo.vdf
-        if header['version'] not in vdfVersions:
-            raise ValueError('Unknown vdfVersion: 0x{0:08x}'.format(header['version']))
+        if header['version'] not in vdfVersionList:
+            raise ValueError(
+                'Unknown vdfVersion: 0x{0:08x}'.format(header['version'])
+            )
 
         if header['universe'] != vdfUniverse:
-            raise ValueError('Unknown vdfUniverse: 0x{0:08x}'.format(header['version']))
+            raise ValueError(
+                'Unknown vdfUniverse: 0x{0:08x}'.format(header['version'])
+            )
 
         # Parsing applications
-        appFields = ('size', 'state', 'last_update', 'access_token', 'checksum', 'change_number')
+        appFieldList = ('size', 'state', 'last_update', 'access_token', 'checksum', 'change_number')
         while True:
             appId = self._readInt32()
             # AppID = 0 marks the last application in the App info
             if appId == 0:
                 break
             # All fields are required.
-            app = self.wrapper((zip(appFields, self.readGameHeader())))
-            if len(app) != len(appFields):
-                raise ValueError('Not all App headers are present, only found {num}: {header!r}'.format(
-                    num=len(app),
-                    header=app,
-                ))
+            app = self.wrapper((zip(appFieldList, self.readAppHeader())))
+            if len(app) != len(appFieldList):
+                raise ValueError(
+                    'Not all App headers are present, only found {num}: {header!r}'.format(num=len(app), header=app)
+                )
             # The newest VDF format is a bit simpler to parse.
             if header['version'] == 0x07564427:
-                app['sections'] = self.parseSubsections()
+                app['sections'] = self.parseSubsectionList()
             else:
                 app['sections'] = self.wrapper()
                 while True:
@@ -83,17 +87,17 @@ class appInfoDecoder:
                     self.offset += 1
 
                     sectionName = self.readString()
-                    app['sections'][sectionName] = self.parseSubsections(rootSection=True)
+                    app['sections'][sectionName] = self.parseSubsectionList(rootSection=True)
 
-                    # New Section ID's could be added in the future, or changes could be made to
+                    # New Section ID could be added in the future, or changes could be made to
                     # existing ones, so instead of maintaining a table of section names and their
-                    # corresponding IDs, we are going to store the IDs with all the data.
+                    # corresponding IdList, we are going to store the IdList with all the data.
                     app['sections'][sectionName][b'__steamFiles_sectionId'] = sectionId
-            if str(appId) in gameIds:
+            if str(appId) in appIdList:
                 parsed[appId] = app
         return parsed
 
-    def parseSubsections(self, rootSection=False):
+    def parseSubsectionList(self, rootSection=False):
         subsection = self.wrapper()
 
         while True:
@@ -106,7 +110,7 @@ class appInfoDecoder:
                 break
 
             key = self.readString()
-            value = self.valueParsers.get(valueType, self._unknownValueType)()
+            value = self.valueParserDic.get(valueType, self._unknownValueType)()
 
             subsection[key] = value
 
@@ -157,57 +161,66 @@ class appInfoDecoder:
 
     @staticmethod
     def _unknownValueType():
-        raise ValueError('Cannot parse the provided data type.')
+        raise ValueError(
+            'Cannot parse the provided data type.'
+        )
 
 
 class steamLauncher(Wox):
-    # set paths
+    # set icon database paths
     iconDatabase = 'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps'
 
+    # find the first steam path from system environment
     sysPathList = os.environ['path'].split(';')
-    steamPathList = []
     for sysPath in sysPathList:
-        if os.path.isfile(sysPath + '/steam.exe') and sysPath not in steamPathList:
-            steamPathList.append(sysPath)
-    steamPath = steamPathList[0]
+        if os.path.isfile(sysPath + '/steam.exe'):
+            steamPath = sysPath
+            break
 
-    # load libFolders' path
-    libs = [steamPath + '/steamApps']
-    with open(libs[0] + '/libraryFolders.vdf') as libFoldersPath:
-        libFolders = vdf.load(libFoldersPath)['LibraryFolders']
+    # load libList from steam installation path
+    with open(steamPath + '/steamApps/libraryFolders.vdf') as libFoldersVdf:
+        libList = vdf.load(libFoldersVdf)['LibraryFolders']
 
-    # get apps' id
-    gameIdList = []
-    libKeyNum = 1
-    libKey = str(libKeyNum)
-    while libKey in libFolders:
-        lib = libFolders[libKey] + '/steamApps'
-        for file in os.scandir(lib):
+    # load apps' id from steam library
+    appIdList = []
+    libNum = 1
+    libDirKey = str(libNum)
+    while libDirKey in libList:
+        libDir = libList[libDirKey] + '/steamApps'
+        for file in os.scandir(libDir):
             if 'appManifest'.lower() in file.name and '228980' not in file.name:
-                gameIdList.append(file.name.replace('appManifest_'.lower(), '').replace('.acf', ''))
-        libKeyNum += 1
-        libKey = str(libKeyNum)
+                appIdList.append(
+                    file.name.replace('appManifest_'.lower(), '').replace('.acf', '')
+                )
+        libNum += 1
+        libDirKey = str(libNum)
 
     # get apps' title, icon
     # load app info vdf for loading client icon id
-    with open(steamPath + '/appCache/appInfo.vdf', 'rb') as appinfoVdf:
-        infoList = appInfoDecoder(appinfoVdf.read(), wrapper=dict).decode(gameIdList).items()
-    gameList = []
-    for info in infoList:
-        gameId = info[0]
-        detail = info[1]['sections'][b'appInfo'.lower()][b'common']
-        gameIconId = detail[b'clientIcon'.lower()].decode('utf-8')
-        gameIcon = steamPath + '/steam/games/' + gameIconId + '.ico'
-        if not os.path.isfile(gameIcon):
+    with open(steamPath + '/appCache/appInfo.vdf', 'rb') as appInfoVdf:
+        appInfoList = appInfoDecoder(appInfoVdf.read(), wrapper=dict).decode(appIdList).items()
+    appList = []
+    for appInfo in appInfoList:
+        appId = appInfo[0]
+        detail = appInfo[1]['sections'][b'appInfo'.lower()][b'common']
+        appIconId = detail[b'clientIcon'.lower()].decode('utf-8')
+        appIcon = steamPath + '/steam/games/' + appIconId + '.ico'
+        if not os.path.isfile(appIcon):
             try:
-                urlretrieve(url=iconDatabase + '/' + str(gameId) + '/' + gameIconId + '.ico', filename=gameIcon)
+                urlretrieve(url=iconDatabase + '/' + str(appId) + '/' + appIconId + '.ico', filename=appIcon)
             except BaseException:
-                gameIcon = 'Image/icon.png'
-        gameList.append({'gameId': gameId, 'gameTitle': detail[b'name'].decode('utf-8'), 'gameIcon': gameIcon})
+                appIcon = './Image/steamIcon.png'
+        appList.append(
+            {
+                'appId': appId,
+                'appTitle': detail[b'name'].decode('utf-8'),
+                'appIcon': appIcon
+            }
+        )
 
     def query(self, queryString):
         result = []
-        gameList = self.gameList
+        appList = self.appList
 
         queryStringLower = queryString.lower()
         queryList = queryStringLower.split()
@@ -217,27 +230,33 @@ class steamLauncher(Wox):
             # regexList.append(re.compile(pattern))
             regexList.append(re.compile(query))
 
-        for game in gameList:
+        for app in appList:
+            appTitle = app['appTitle']
+            appId = app['appId']
             match = True
             for regex in regexList:
-                match = regex.search(item.lower()) and match
+                match = regex.search(appTitle.lower() + str(appId)) and match
             if match:
+                appIcon = app['appIcon']
                 result.append(
                     {
-                        'Title': game['gameTitle'] + ' - ({})'.format(game['gameId']),
+                        'Title': appTitle + ' - ({})'.format(appId),
                         'SubTitle': 'Press Enter key to launch',
-                        'IcoPath': game['gameIcon'],
+                        'IcoPath': appIcon,
                         'JsonRPCAction': {
-                            'method': 'launchGame',
-                            'parameters': [game['gameId']],
-                            "doNotHideAfterAction".replace('oNo', 'on'): False,
-                        },
+                            'method': 'launchApp',
+                            'parameters': [appId],
+                            "dontHideAfterAction": False
+                        }
                     }
                 )
         return result
 
-    def launchGame(self, gameId):
-        webbrowser.open('steam://runGameId/{}'.format(gameId))
+    @classmethod
+    def launchApp(cls, appId):
+        webbrowser.open(
+            'steam://runGameId/{}'.format(appId)
+        )
 
 
 if __name__ == '__main__':
