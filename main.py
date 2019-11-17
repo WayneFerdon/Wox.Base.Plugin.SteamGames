@@ -208,7 +208,7 @@ class steamLauncher(Wox):
         if not os.path.isfile(appIcon):
             try:
                 urlretrieve(url=iconDatabase + '/' + str(appId) + '/' + appIconId + '.ico', filename=appIcon)
-            except BaseException:
+            except Exception:
                 appIcon = './Image/steamIcon.png'
         appList.append(
             {
