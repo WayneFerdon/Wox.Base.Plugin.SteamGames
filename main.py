@@ -176,8 +176,12 @@ class steamLocal:
 
     def __localAppInfo__(self):
         with open(self.steamPath + '/appCache/appInfo.vdf', 'rb') as appInfoVdf:
-            appInfo = appInfoDecoder(appInfoVdf.read(), wrapper=dict).decode(self.__localAppId__()).items()
-        return appInfo
+            appInfoList = appInfoDecoder(appInfoVdf.read(), wrapper=dict).decode(self.__localAppId__()).items()
+        appInfoDict = dict()
+        for appInfo in appInfoList:
+            appId = appInfo[0]
+            appInfoDict[str(appId)] = appInfo[1]['sections'][b'appInfo'.lower()][b'common']
+        return appInfoDict
 
     def __localLib__(self):
         with open(self.steamPath + '/steamApps/libraryFolders.vdf') as libFoldersVdf:
@@ -185,37 +189,50 @@ class steamLocal:
         return libList
 
     def __localAppId__(self):
+        def scanApp(path):
+            for child in os.scandir(path):
+                if (
+                        'appManifest'.lower() in child.name
+                        and '228980' not in child.name
+                ):
+                    appIdList.append(
+                        child.name.replace('appManifest_'.lower(), '').replace('.acf', '')
+                    )
+
         libList = self.__localLib__()
         appIdList = list()
+        scanApp(self.steamPath)
         libNum = 1
         libDirKey = str(libNum)
         while libDirKey in libList.keys():
             libDir = libList[libDirKey] + '/steamApps'
-            for file in os.scandir(libDir):
-                if (
-                        'appManifest'.lower() in file.name
-                        and '228980' not in file.name
-                ):
-                    appIdList.append(
-                        file.name.replace('appManifest_'.lower(), '').replace('.acf', '')
-                    )
+            scanApp(libDir)
             libNum += 1
             libDirKey = str(libNum)
         return appIdList
 
     def appInfoList(self):
+        def getIcon(data):
+            if data[b'type'] != b'Music':
+                iconId = data[b'clientIcon'.lower()].decode('utf-8')
+                icon = self.steamPath + '/steam/games/' + iconId + '.ico'
+            else:
+                parentId = str(data[b'parent'].data)
+                parent = localAppInfo[parentId]
+                icon = getIcon(parent)
+            if not os.path.isfile(icon):
+                try:
+                    urlretrieve(url=iconDatabase + '/' + str(appId) + '/' + icon + '.ico', filename=icon)
+                except Exception:
+                    icon = './Image/steamIcon.png'
+            return icon
+
         iconDatabase = 'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps'
         appList = list()
-        for appInfo in self.__localAppInfo__():
-            appId = appInfo[0]
-            detail = appInfo[1]['sections'][b'appInfo'.lower()][b'common']
-            appIconId = detail[b'clientIcon'.lower()].decode('utf-8')
-            appIcon = self.steamPath + '/steam/games/' + appIconId + '.ico'
-            if not os.path.isfile(appIcon):
-                try:
-                    urlretrieve(url=iconDatabase + '/' + str(appId) + '/' + appIconId + '.ico', filename=appIcon)
-                except Exception:
-                    appIcon = './Image/steamIcon.png'
+        localAppInfo = self.__localAppInfo__()
+        for appId in localAppInfo:
+            detail = localAppInfo[appId]
+            appIcon = getIcon(detail)
             appList.append(
                 {
                     'appId': appId,
@@ -257,7 +274,7 @@ class steamLauncher(Wox):
                 appIcon = app['appIcon']
                 result.append(
                     {
-                        'Title': appTitle + ' - ({})'.format(appId),
+                        'Title': appTitle + ' - ({})'.format(appId) + '-----' + appIcon,
                         'SubTitle': 'Press Enter key to launch',
                         'IcoPath': appIcon,
                         'JsonRPCAction': {
