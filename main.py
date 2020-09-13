@@ -274,7 +274,7 @@ class steamLauncher(Wox):
                 appIcon = app['appIcon']
                 result.append(
                     {
-                        'Title': appTitle + ' - ({})'.format(appId) + '-----' + appIcon,
+                        'Title': appTitle + ' - ({})'.format(appId),
                         'SubTitle': 'Press Enter key to launch',
                         'IcoPath': appIcon,
                         'JsonRPCAction': {
