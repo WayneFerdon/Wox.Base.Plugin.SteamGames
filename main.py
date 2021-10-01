@@ -45,7 +45,8 @@ class appInfoDecoder:
         )
         if len(header) != len(headerFieldList):
             raise ValueError(
-                'Not all VDF headers are present, only found {num}: {header!r}'.format(num=len(header), header=header)
+                'Not all VDF headers are present, only found {num}: {header!r}'.format(
+                    num=len(header), header=header)
             )
 
         # Currently these are the only possible values for
@@ -61,7 +62,8 @@ class appInfoDecoder:
             )
 
         # Parsing applications
-        appFieldList = ('size', 'state', 'last_update', 'access_token', 'checksum', 'change_number')
+        appFieldList = ('size', 'state', 'last_update',
+                        'access_token', 'checksum', 'change_number')
         while True:
             appId = self._readInt32_()
             # AppID = 0 marks the last application in the App info
@@ -71,7 +73,8 @@ class appInfoDecoder:
             app = self.wrapper((zip(appFieldList, self.readAppHeader())))
             if len(app) != len(appFieldList):
                 raise ValueError(
-                    'Not all App headers are present, only found {num}: {header!r}'.format(num=len(app), header=app)
+                    'Not all App headers are present, only found {num}: {header!r}'.format(
+                        num=len(app), header=app)
                 )
             # The newest VDF format is a bit simpler to parse.
             if header['version'] == 0x07564427:
@@ -87,7 +90,8 @@ class appInfoDecoder:
                     self.offset += 1
 
                     sectionName = self.readString()
-                    app['sections'][sectionName] = self.parseSubsectionList(rootSection=True)
+                    app['sections'][sectionName] = self.parseSubsectionList(
+                        rootSection=True)
 
                     # New Section ID could be added in the future, or changes could be made to
                     # existing ones, so instead of maintaining a table of section names and their
@@ -110,7 +114,8 @@ class appInfoDecoder:
                 break
 
             key = self.readString()
-            value = self.valueParserDic.get(valueType, self._unknownValueType_)()
+            value = self.valueParserDic.get(
+                valueType, self._unknownValueType_)()
 
             subsection[key] = value
 
@@ -176,16 +181,19 @@ class steamLocal:
 
     def __localAppInfo__(self):
         with open(self.steamPath + '/appCache/appInfo.vdf', 'rb') as appInfoVdf:
-            appInfoList = appInfoDecoder(appInfoVdf.read(), wrapper=dict).decode(self.__localAppId__()).items()
+            appInfoList = appInfoDecoder(appInfoVdf.read(), wrapper=dict).decode(
+                self.__localAppId__()).items()
         appInfoDict = dict()
         for appInfo in appInfoList:
             appId = appInfo[0]
-            appInfoDict[str(appId)] = appInfo[1]['sections'][b'appInfo'.lower()][b'common']
+            appInfoDict[str(
+                appId)] = appInfo[1]['sections'][b'appInfo'.lower()][b'common']
         return appInfoDict
 
     def __localLib__(self):
         with open(self.steamPath + '/steamApps/libraryFolders.vdf') as libFoldersVdf:
-            libList = vdf.load(libFoldersVdf)['LibraryFolders']
+            libList = vdf.load(libFoldersVdf)
+            libList = libList['libraryfolders']
         return libList
 
     def __localAppId__(self):
@@ -196,7 +204,8 @@ class steamLocal:
                         and '228980' not in child.name
                 ):
                     appIdList.append(
-                        child.name.replace('appManifest_'.lower(), '').replace('.acf', '')
+                        child.name.replace(
+                            'appManifest_'.lower(), '').replace('.acf', '')
                     )
 
         libList = self.__localLib__()
@@ -205,7 +214,7 @@ class steamLocal:
         libNum = 1
         libDirKey = str(libNum)
         while libDirKey in libList.keys():
-            libDir = libList[libDirKey] + '/steamApps'
+            libDir = libList[libDirKey]['path'] + '/steamApps'
             scanApp(libDir)
             libNum += 1
             libDirKey = str(libNum)
@@ -222,7 +231,8 @@ class steamLocal:
                 icon = getIcon(parent)
             if not os.path.isfile(icon):
                 try:
-                    urlretrieve(url=iconDatabase + '/' + str(appId) + '/' + icon + '.ico', filename=icon)
+                    urlretrieve(url=iconDatabase + '/' + str(appId) +
+                                '/' + icon + '.ico', filename=icon)
                 except Exception:
                     icon = './Image/steamIcon.png'
             return icon
