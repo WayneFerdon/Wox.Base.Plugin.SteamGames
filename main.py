@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
 import re
+from tkinter.messagebox import NO
 import webbrowser
 from urllib.request import urlretrieve
 import struct
 from collections import namedtuple
 import vdf
+import winreg
 from wox import Wox, WoxAPI
 
 vdfVersionList = [0x07564426, 0x07564427]
@@ -14,9 +16,7 @@ vdfUniverse = 0x00000001
 # VDF has variable length integers (32-bit and 64-bit).
 Integer = namedtuple('Integer', ('size', 'data'))
 
-
 class appInfoDecoder:
-
     def __init__(self, data, wrapper=dict):
         self.wrapper = wrapper  # Wrapping container
         self.data = memoryview(data)  # Incoming data (bytes)
@@ -173,11 +173,10 @@ class appInfoDecoder:
 
 class steamLocal:
     def __init__(self):
-        sysPathList = os.environ['path'].split(';')
-        for sysPath in sysPathList:
-            if os.path.isfile(sysPath + '/steam.exe'):
-                self.steamPath = sysPath
-                break
+        regPath = r"steam\\Shell\\Open\\Command"
+        key = winreg.OpenKeyEx(winreg.HKEY_CLASSES_ROOT,regPath)
+        data = winreg.QueryValueEx(key,None)
+        self.steamPath =  str(data[0]).split("\"")[1].replace("\steam.exe","")
 
     def __localAppInfo__(self):
         with open(self.steamPath + '/appCache/appInfo.vdf', 'rb') as appInfoVdf:
