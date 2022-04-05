@@ -176,7 +176,7 @@ class steamLocal:
         regPath = r"steam\\Shell\\Open\\Command"
         key = winreg.OpenKeyEx(winreg.HKEY_CLASSES_ROOT,regPath)
         data = winreg.QueryValueEx(key,None)
-        self.steamPath =  str(data[0]).split("\"")[1].replace("\steam.exe","")
+        self.steamPath =  str(data[0]).split("\"")[1].replace("\Steam.exe","")
 
     def __localAppInfo__(self):
         with open(self.steamPath + '/appCache/appInfo.vdf', 'rb') as appInfoVdf:
