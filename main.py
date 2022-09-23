@@ -1,3 +1,16 @@
+# ----------------------------------------------------------------
+# Author: wayneferdon wayneferdon@hotmail.com
+# Date: 2022-02-12 06:25:55
+# LastEditors: wayneferdon wayneferdon@hotmail.com
+# LastEditTime: 2022-09-24 03:27:32
+# FilePath: \undefinedc:\Users\WayneFerdon\AppData\Local\Wox\app-1.4.1196\Plugins\Wox.Plugin.SteamGames\main.py
+# ----------------------------------------------------------------
+# Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
+# Licensed to the .NET Foundation under one or more agreements.
+# The .NET Foundation licenses this file to you under the MIT license.
+# See the LICENSE file in the project root for more information.
+# ----------------------------------------------------------------
+
 # -*- coding: utf-8 -*-
 import os
 import re
@@ -176,10 +189,10 @@ class steamLocal:
         regPath = r"steam\\Shell\\Open\\Command"
         key = winreg.OpenKeyEx(winreg.HKEY_CLASSES_ROOT,regPath)
         data = winreg.QueryValueEx(key,None)
-        self.steamPath =  str(data[0]).split("\"")[1].replace("\Steam.exe","")
+        self.steamPath =  str(data[0]).split("\"")[1].replace("\steam.exe","")
 
     def __localAppInfo__(self):
-        with open(self.steamPath + '/appCache/appInfo.vdf', 'rb') as appInfoVdf:
+        with open(self.steamPath + '/appcache/appinfo.vdf', 'rb') as appInfoVdf:
             appInfoList = appInfoDecoder(appInfoVdf.read(), wrapper=dict).decode(
                 self.__localAppId__()).items()
         appInfoDict = dict()
@@ -304,3 +317,4 @@ class steamLauncher(Wox):
 
 if __name__ == '__main__':
     steamLauncher()
+    # print(steamLauncher().query(""))
