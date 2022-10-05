@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-10-05 18:41:39
 # LastEditors: wayneferdon wayneferdon@hotmail.com
-# LastEditTime: 2022-10-05 18:43:01
+# LastEditTime: 2022-10-05 18:45:34
 # FilePath: \Wox.Plugin.SteamGames\SteamLocal.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -81,8 +81,10 @@ class SteamLocal:
                 icon = getIcon(parent)
             if not os.path.isfile(icon):
                 try:
-                    urlretrieve(url=ICON_DATABASE + '/' + str(appId) +
-                                '/' + icon + '.ico', filename=icon)
+                    urlretrieve(
+                        url=ICON_DATABASE + '/' + str(appId) + '/' + icon + '.ico',
+                        filename=icon
+                    )
                 except Exception:
                     icon = './Image/steamIcon.png'
             return icon
