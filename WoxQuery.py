@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-10-05 18:33:50
 # LastEditors: wayneferdon wayneferdon@hotmail.com
-# LastEditTime: 2022-10-05 18:33:52
+# LastEditTime: 2022-10-19 23:33:21
 # FilePath: \Wox.Plugin.SteamGames\WoxQuery.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -12,9 +12,9 @@
 # ----------------------------------------------------------------
 
 # -*- coding: utf-8 -*-
-from wox import Wox, WoxAPI
 import win32con
 import win32clipboard
+from wox import Wox, WoxAPI
 
 class WoxQuery(Wox):
 # class WoxQuery():

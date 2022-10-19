@@ -2,7 +2,7 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-10-05 18:41:39
 # LastEditors: wayneferdon wayneferdon@hotmail.com
-# LastEditTime: 2022-10-05 18:45:34
+# LastEditTime: 2022-10-20 01:07:17
 # FilePath: \Wox.Plugin.SteamGames\SteamLocal.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
@@ -13,6 +13,7 @@
 
 import os
 from urllib.request import urlretrieve
+from numpy import integer
 import vdf
 import winreg
 from WoxQuery import *
@@ -29,19 +30,19 @@ class SteamLocal:
         data = winreg.QueryValueEx(key,None)
         self.steamPath =  str(data[0]).split("\"")[1].replace("\steam.exe","")
 
-    def __localAppInfo__(self):
+    def __localAppInfo__(self) -> dict:
+        localAppID, libs = self.__localAppId__()
         with open(self.steamPath + '/appcache/appinfo.vdf', 'rb') as appInfoVdf:
-            appInfoList = SteamInfoDecoder(appInfoVdf.read(), wrapper=dict).decode(
-                self.__localAppId__()).items()
+            appInfoList = SteamInfoDecoder(appInfoVdf.read(), wrapper=dict).decode(localAppID).items()
         appInfoDict = dict()
         for appInfo in appInfoList:
             appId = appInfo[0]
-            appInfoDict[str(
-                appId)] = appInfo[1]['sections'][b'appInfo'.lower()][b'common']
+            appInfoDict[str(appId)] = appInfo[1]['sections'][b'appInfo'.lower()][b'common']
+            appInfoDict[str(appId)]['path'] = libs[str(appId)] + str(appInfo[1]['sections'][b'appInfo'.lower()][b'config'][b'installdir'], "utf-8")
         return appInfoDict
 
-    def __localLib__(self):
-        with open(self.steamPath + '/steamApps/libraryFolders.vdf') as libFoldersVdf:
+    def __localLib__(self) -> dict:
+        with open(self.steamPath + '/steamapps/libraryFolders.vdf') as libFoldersVdf:
             libList = vdf.load(libFoldersVdf)
             libList = libList['libraryfolders']
         return libList
@@ -53,25 +54,25 @@ class SteamLocal:
                         'appManifest'.lower() in child.name
                         and '228980' not in child.name
                 ):
-                    appIdList.append(
-                        child.name.replace(
-                            'appManifest_'.lower(), '').replace('.acf', '')
-                    )
+                    id = child.name.replace('appManifest_'.lower(), '').replace('.acf', '')
+                    appIdList.append(id)
+                    libInfos[id] = path + 'common\\'
 
         libList = self.__localLib__()
+        libInfos = dict()
         appIdList = list()
         scanApp(self.steamPath)
         libNum = 1
         libDirKey = str(libNum)
         while libDirKey in libList.keys():
-            libDir = libList[libDirKey]['path'] + '/steamApps'
+            libDir = libList[libDirKey]['path'] + '\\steamapps\\'
             scanApp(libDir)
             libNum += 1
             libDirKey = str(libNum)
-        return appIdList
+        return appIdList, libInfos
 
     def appInfoList(self):
-        def getIcon(data):
+        def getIcon(data:dict[str, bytes|integer]):
             if data[b'type'] != b'Music':
                 iconId = data[b'clientIcon'.lower()].decode('utf-8')
                 icon = self.steamPath + '/steam/games/' + iconId + '.ico'
@@ -96,9 +97,10 @@ class SteamLocal:
             appIcon = getIcon(detail)
             appList.append(
                 {
-                    'appId': appId,
-                    'appTitle': detail[b'name'].decode('utf-8'),
-                    'appIcon': appIcon
+                    'path': detail['path'],
+                    'id': appId,
+                    'title': bytes(detail[b'name']).decode('utf-8'),
+                    'icon': appIcon
                 }
             )
         return appList
