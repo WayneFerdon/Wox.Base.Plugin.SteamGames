@@ -1,9 +1,9 @@
 # ----------------------------------------------------------------
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-10-05 18:33:50
-# LastEditors: wayneferdon wayneferdon@hotmail.com
-# LastEditTime: 2022-10-19 23:33:21
-# FilePath: \Wox.Plugin.SteamGames\WoxQuery.py
+# LastEditors: WayneFerdon wayneferdon@hotmail.com
+# LastEditTime: 2023-02-10 17:19:31
+# FilePath: \Plugins\Wox.Plugin.SteamGames\WoxQuery.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
 # Licensed to the .NET Foundation under one or more agreements.

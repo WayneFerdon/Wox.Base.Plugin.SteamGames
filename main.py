@@ -1,9 +1,9 @@
 # ----------------------------------------------------------------
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-02-12 06:25:55
-# LastEditors: wayneferdon wayneferdon@hotmail.com
-# LastEditTime: 2022-10-20 01:09:27
-# FilePath: \Wox.Plugin.SteamGames\main.py
+# LastEditors: WayneFerdon wayneferdon@hotmail.com
+# LastEditTime: 2023-02-10 17:19:39
+# FilePath: \Plugins\Wox.Plugin.SteamGames\main.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
 # Licensed to the .NET Foundation under one or more agreements.
@@ -14,12 +14,10 @@
 # -*- coding: utf-8 -*-
 import webbrowser
 from WoxQuery import *
-from SteamInfoDecoder import *
 from RegexList import *
 from SteamLocal import *
 from subprocess import run
 
-# class steamLauncher:
 class SteamLauncher(WoxQuery):
     def query(self, queryString):
         appList = SteamLocal().appInfoList()
