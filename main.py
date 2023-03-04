@@ -13,12 +13,12 @@
 
 # -*- coding: utf-8 -*-
 import webbrowser
-from WoxQuery import *
+from Query import *
 from RegexList import *
 from SteamLocal import *
 from subprocess import run
 
-class SteamLauncher(WoxQuery):
+class SteamLauncher(Query):
     def query(self, queryString):
         appList = SteamLocal().appInfoList()
         results = list()
@@ -32,7 +32,7 @@ class SteamLauncher(WoxQuery):
             appIcon = app['icon']
             title = appTitle + ' - ({})'.format(appId)
             contextData = appId
-            results.append(WoxResult(title, subTitle, appIcon, contextData, self.launchApp.__name__, True, appId).toDict())
+            results.append(QueryResult(title, subTitle, appIcon, contextData, self.launchApp.__name__, True, appId).toDict())
         return results
     
     def context_menu(self, appId):
@@ -44,7 +44,7 @@ class SteamLauncher(WoxQuery):
             subtitle = "Press Enter to Open App Dir"
             method = self.openDir.__name__
             icon = app['icon']
-            return [WoxResult(path, subtitle, icon, None, method, True, path).toDict()]
+            return [QueryResult(path, subtitle, icon, None, method, True, path).toDict()]
 
     def openDir(self, dir:str):
         dir = dir.replace("\\\\","\\")

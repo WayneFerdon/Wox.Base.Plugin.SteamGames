@@ -16,7 +16,7 @@ from urllib.request import urlretrieve
 from numpy import integer
 import vdf
 import winreg
-from WoxQuery import *
+from Query import *
 from RegexList import *
 import steam.utils.appcache as StaemCache
 
