@@ -2,8 +2,8 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-10-05 16:16:00
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-02 12:09:08
-# FilePath: \Flow.Launcher.Plugin.ChromeHistory\Query.py
+# LastEditTime: 2023-04-02 12:24:11
+# FilePath: \Flow.Launcher.Plugin.SteamGames\Query.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
 # Licensed to the .NET Foundation under one or more agreements.
@@ -54,7 +54,6 @@ class Launcher(LauncherBase):
     if not os.path.isfile(SettingPath):
         SettingPath = GetSettingPath(PathName, True)
 
-
 class Query(Launcher):
 # class Query():
     @classmethod
@@ -94,22 +93,3 @@ class QueryResult:
                 "doNotHideAfterAction".replace('oNo', 'on'): (not self.hideAfterAction), 
             }
         return jsonResult
-
-class QueryDebug:
-    # 静态变量
-    Instance=None
-    _flag=False
-    def __new__(cls, *args, **kwargs):
-        if cls.Instance is None:
-            cls.Instance=super().__new__(cls)
-        return cls.Instance
-    def __init__(self):
-        if QueryDebug._flag:
-            return
-        QueryDebug._flag=True
-
-    Logs = list[str]()
-    
-    @staticmethod
-    def Log(*info):
-        QueryDebug.Instance.Logs.append([len(QueryDebug.Instance.Logs), str(list(info))[1:-1] + "\n" + "\n".join(traceback.format_stack())])
