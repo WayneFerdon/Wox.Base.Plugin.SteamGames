@@ -2,8 +2,9 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-10-05 16:16:00
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-02 12:24:11
+# LastEditTime: 2023-04-02 13:49:37
 # FilePath: \Flow.Launcher.Plugin.SteamGames\Query.py
+# 
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
 # Licensed to the .NET Foundation under one or more agreements.
@@ -70,21 +71,21 @@ class Query(Launcher):
         return QueryResult(title, subTitle, iconPath, None, cls.copyData.__name__, True, titleData).toDict()
 
 class QueryResult:
-    def __init__(self, title:str, subTitle:str, icoPath:str, contextData , method:str, hideAfterAction:bool, *args) -> None:
+    def __init__(self, title:str, subtitle:str, icon:str, context , method:str, hideAfterAction:bool, *args) -> None:
         self.title = title
-        self.subTitle = subTitle
-        self.icoPath = icoPath
+        self.subtitle = subtitle
+        self.icon = icon
         self.method = method
         self.parameters = args
-        self.contextData = contextData
+        self.context = context
         self.hideAfterAction = hideAfterAction
     
     def toDict(self):
         jsonResult = {
             'Title': self.title, 
-            'SubTitle': self.subTitle, 
-            'IcoPath': self.icoPath, 
-            'ContextData': self.contextData
+            'SubTitle': self.subtitle, 
+            'IcoPath': self.icon, 
+            'ContextData': self.context
         }
         if self.method is not None:
             jsonResult['JsonRPCAction'] = {
