@@ -10,6 +10,7 @@
  * The .NET Foundation licenses this file to you under the MIT license.
  * See the LICENSE file in the project root for more information.
 -->
+
 # Wox.Base.Plugin.SteamGames
 Plugin for [Flow Launcher](https://github.com/Flow-Launcher/Flow.Launcher) or other  [Wox](https://github.com/Wox-launcher/Wox) base launchers
 
