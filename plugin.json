@@ -6,7 +6,7 @@
   "Author": "Wayne Custaf Laqinoa Ferdon",
   "Version": "1.0.0",
   "Language": "python",
-  "Website": "https://www.github.com/wayneferdon",
+  "Website": "https://www.github.com/wayneferdon/Wox.Base.Plugin.SteamGames",
   "IcoPath": "./Images/steamIcon.png",
   "ExecuteFileName": "main.py"
 }
