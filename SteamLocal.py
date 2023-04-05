@@ -2,8 +2,8 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-10-05 18:41:39
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-02-10 17:19:06
-# FilePath: \Plugins\Wox.Plugin.SteamGames\SteamLocal.py
+# LastEditTime: 2023-04-05 04:49:59
+# FilePath: \Plugins\Wox.Base.Plugin.SteamGames\SteamLocal.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
 # Licensed to the .NET Foundation under one or more agreements.
@@ -11,14 +11,15 @@
 # See the LICENSE file in the project root for more information.
 # ----------------------------------------------------------------
 
-import os
+import os, sys
 from urllib.request import urlretrieve
 from numpy import integer
 import vdf
 import winreg
-from Query import *
-from RegexList import *
 import steam.utils.appcache as StaemCache
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+from WoxPluginBase_Query import *
 
 ICON_DATABASE = 'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps'
 

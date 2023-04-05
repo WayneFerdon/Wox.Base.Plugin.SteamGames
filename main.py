@@ -2,8 +2,8 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-02-12 06:25:55
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-02-10 17:19:39
-# FilePath: \Plugins\Wox.Plugin.SteamGames\main.py
+# LastEditTime: 2023-04-05 04:28:29
+# FilePath: \Plugins\Wox.Base.Plugin.SteamGames\main.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
 # Licensed to the .NET Foundation under one or more agreements.
@@ -20,7 +20,7 @@ import webbrowser
 from SteamLocal import *
 from subprocess import run
 
-class SteamLauncher(Query):
+class SteamLauncher(QueryPlugin):
     def query(self, queryString):
         appList = SteamLocal().appInfoList()
         results = list()
@@ -52,8 +52,7 @@ class SteamLauncher(Query):
         dir = dir.replace("\\\\","\\")
         run(f'explorer {dir}', shell=True)
     
-    @classmethod
-    def launchApp(cls, appId):
+    def launchApp(self, appId):
         webbrowser.open('steam://runGameId/{}'.format(appId))
 
 
