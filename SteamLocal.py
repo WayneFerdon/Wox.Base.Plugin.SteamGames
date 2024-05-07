@@ -19,7 +19,7 @@ import winreg
 import steam.utils.appcache as StaemCache
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-from WoxPluginBase_Query import *
+from WoxBasePluginQuery import *
 
 ICON_DATABASE = 'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/apps'
 
