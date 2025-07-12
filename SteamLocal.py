@@ -2,8 +2,8 @@
 # Author: wayneferdon wayneferdon@hotmail.com
 # Date: 2022-10-05 18:41:39
 # LastEditors: WayneFerdon wayneferdon@hotmail.com
-# LastEditTime: 2023-04-05 04:49:59
-# FilePath: \Plugins\Wox.Base.Plugin.SteamGames\SteamLocal.py
+# LastEditTime: 2025-07-13 06:01:42
+# FilePath: \Wox.Base.Plugin.SteamGames\SteamLocal.py
 # ----------------------------------------------------------------
 # Copyright (c) 2022 by Wayne Ferdon Studio. All rights reserved.
 # Licensed to the .NET Foundation under one or more agreements.
@@ -34,7 +34,7 @@ class SteamLocal:
     def __localAppInfo__(self) -> dict:
         localAppID, libs = self.__localAppId__()
         with open(self.steamPath + '/appcache/appinfo.vdf', 'rb') as appInfoVdf:
-            header, apps = StaemCache.parse_appinfo(appInfoVdf)
+            header, apps = StaemCache.parse_appinfo(appInfoVdf, mapper=dict)
             appInfoDict = dict()
             while(True):
                 try:

@@ -1,13 +1,10 @@
 <!--
  * @Author: WayneFerdon wayneferdon@hotmail.com
- * @Date: 2023-03-04 12:45:58
  * @LastEditors: WayneFerdon wayneferdon@hotmail.com
- * @LastEditTime: 2023-04-03 02:37:46
- * @FilePath: \undefinedc:\Users\WayneFerdon\AppData\Local\FlowLauncher\app-1.14.0\Plugins\Wox.Base.Plugin.SteamGames\README.md
+ * @LastEditTime: 2025-07-13 06:06:48
+ * @FilePath: \Wox.Base.Plugin.SteamGames\README.md
  * ----------------------------------------------------------------
- * Copyright (c) 2023 by Wayne Ferdon Studio. All rights reserved.
- * Licensed to the .NET Foundation under one or more agreements.
- * The .NET Foundation licenses this file to you under the MIT license.
+ * Copyright (c) 2025 by WayneFerdon.
  * See the LICENSE file in the project root for more information.
 -->
 
@@ -18,6 +15,10 @@ Search installed games in Steam Library and Launch
 
 1. Requirements
 
-   > [WoxBasePluginQuery](https://github.com/WayneFerdon/WoxBasePluginQuery/)
+   > 1. [WoxBasePluginQuery](https://github.com/WayneFerdon/WoxBasePluginQuery/)
+   >
+   > 2. [solsticegamestudios/steam forked from ValvePython/steam](https://github.com/solsticegamestudios/steam)
+   >
+   >     pip install "git+https://github.com/solsticegamestudios/steam#egg=steam"
 
 2. Other Wox base launcher should be available too, see [WoxBasePluginQuery](https://github.com/WayneFerdon/WoxBasePluginQuery/)
